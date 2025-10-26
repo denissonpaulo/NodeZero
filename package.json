@@ -1,0 +1,25 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "Aulas sobre Node JS, projeto para treinamento.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/denissonpaulo/NodeJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/denissonpaulo/NodeJS/issues"
+  },
+  "homepage": "https://github.com/denissonpaulo/NodeJS#readme",
+  "dependencies": {
+    "nodemon": "^3.1.10",
+    "sequelize": "^6.37.6",
+    "sqlite3": "^5.1.7"
+  }
+}
