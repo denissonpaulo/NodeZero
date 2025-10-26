@@ -7,7 +7,7 @@ class HtmlController {
     static async paginaInicial(req, res) {
         try {
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
                 <!DOCTYPE html>
@@ -73,20 +73,20 @@ class HtmlController {
         try {
             const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
             const searchParams = parsedUrl.searchParams;
-            
+
             const search = searchParams.get('search');
             const campo = searchParams.get('campo');
             const minPreco = searchParams.get('minPreco');
             const maxPreco = searchParams.get('maxPreco');
             const page = parseInt(searchParams.get('page')) || 1;
             const limit = parseInt(searchParams.get('limit')) || 10;
-            
+
             const pagina = page;
             const limite = limit;
             const offset = (pagina - 1) * limite;
-            
+
             let where = {};
-            
+
             // Aplicar filtros
             if (search && campo) {
                 if (campo === 'nome' || campo === 'descricao') {
@@ -101,7 +101,7 @@ class HtmlController {
             }
 
             // Buscar produtos com paginação
-            const { count: totalProdutos, rows: produtos } = await Produto.findAndCountAll({ 
+            const { count: totalProdutos, rows: produtos } = await Produto.findAndCountAll({
                 where,
                 order: [['id', 'ASC']],
                 limit: limite,
@@ -110,18 +110,18 @@ class HtmlController {
 
             const totalPaginas = Math.ceil(totalProdutos / limite);
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             // Função auxiliar para gerar URLs de paginação
             const gerarUrlPaginacao = (page, limit) => {
                 const params = new URLSearchParams();
                 params.set('page', page);
                 params.set('limit', limit || limite);
-                
+
                 if (search) params.set('search', search);
                 if (campo) params.set('campo', campo);
                 if (minPreco) params.set('minPreco', minPreco);
                 if (maxPreco) params.set('maxPreco', maxPreco);
-                
+
                 return '/produtos-lista?' + params.toString();
             };
 
@@ -245,16 +245,16 @@ class HtmlController {
                                                     </a>
                                                 ` : ''}
                                                 
-                                                ${Array.from({length: Math.min(5, totalPaginas)}, (_, i) => {
-                                                    const paginaNum = Math.max(1, Math.min(totalPaginas - 4, pagina - 2)) + i;
-                                                    if (paginaNum > totalPaginas) return '';
-                                                    return `
+                                                ${Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                const paginaNum = Math.max(1, Math.min(totalPaginas - 4, pagina - 2)) + i;
+                if (paginaNum > totalPaginas) return '';
+                return `
                                                         <a href="${gerarUrlPaginacao(paginaNum, limite)}" 
                                                            class="btn-paginacao ${paginaNum === pagina ? 'active' : ''}">
                                                             ${paginaNum}
                                                         </a>
                                                     `;
-                                                }).join('')}
+            }).join('')}
                                                 
                                                 ${pagina < totalPaginas ? `
                                                     <a href="${gerarUrlPaginacao(pagina + 1, limite)}" class="btn-paginacao" title="Próxima página">
@@ -347,7 +347,7 @@ class HtmlController {
     static async paginaCadastro(req, res) {
         try {
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
                 <!DOCTYPE html>
@@ -431,7 +431,7 @@ class HtmlController {
             }
 
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
                 <!DOCTYPE html>
@@ -527,7 +527,7 @@ class HtmlController {
             }
 
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
                 <!DOCTYPE html>
@@ -604,7 +604,7 @@ class HtmlController {
     static async paginaSucesso(req, res) {
         try {
             const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-            
+
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
                 <!DOCTYPE html>
@@ -647,6 +647,276 @@ class HtmlController {
             `);
         } catch (error) {
             console.error('Erro ao carregar página de sucesso:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaCadastro(req, res) {
+        try {
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cadastrar Produto - Sistema de Produtos</title>
+                <style>${css}</style>
+            </head>
+            <body>
+                <div class="container">
+                    <a href="/" class="back-link">← Voltar para a página inicial</a>
+                    
+                    <div class="card">
+                        <div class="header">
+                            <h1>➕ Cadastrar Novo Produto</h1>
+                            <p>Escolha como deseja cadastrar o produto</p>
+                        </div>
+
+                        <!-- Opções de Cadastro -->
+                        <div class="cadastro-options">
+                            <a href="/cadastro-manual" class="option-card">
+                                <div class="option-icon">⌨️</div>
+                                <h3>Cadastro Manual</h3>
+                                <p>Digite os dados do produto manualmente</p>
+                                <button class="btn" type="button">Selecionar</button>
+                            </a>
+                            
+                            <a href="/cadastro-qrcode" class="option-card">
+                                <div class="option-icon">📱</div>
+                                <h3>Via QR Code</h3>
+                                <p>Escaneie o QR Code da nota fiscal</p>
+                                <button class="btn btn-success" type="button">Selecionar</button>
+                            </a>
+                        </div>
+
+                        <div class="dev-note">
+                            <h4>💡 Dica Rápida</h4>
+                            <p><strong>Cadastro Manual:</strong> Ideal para produtos sem nota fiscal ou cadastros únicos.</p>
+                            <p><strong>Via QR Code:</strong> Mais rápido e preciso para produtos comprados com nota fiscal.</p>
+                        </div>
+                    </div>
+                </div>
+                <script src="/script.js"></script>
+            </body>
+            </html>
+        `);
+        } catch (error) {
+            console.error('Erro ao carregar página de cadastro:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaCadastroManual(req, res) {
+        try {
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cadastrar Produto Manualmente - Sistema de Produtos</title>
+                <style>${css}</style>
+            </head>
+            <body>
+                <div class="container">
+                    <a href="/cadastro" class="back-link">← Voltar para opções de cadastro</a>
+                    
+                    <div class="card form-container">
+                        <div class="header">
+                            <h1>⌨️ Cadastrar Produto Manualmente</h1>
+                            <p>Preencha os dados do produto abaixo</p>
+                        </div>
+
+                        <form id="formProduto" action="/produtos" method="POST">
+                            <div class="form-group">
+                                <label for="nome">Nome do Produto *</label>
+                                <input type="text" id="nome" name="nome" required 
+                                       placeholder="Ex: Placa mãe Asus i9">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="preco">Preço *</label>
+                                <input type="number" id="preco" name="preco" step="0.01" required 
+                                       placeholder="Ex: 788.90">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="descricao">Descrição</label>
+                                <textarea id="descricao" name="descricao" 
+                                          placeholder="Ex: PLC 8 slots DDR5 + i9 + Cooler"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">Cadastrar Produto</button>
+                                <a href="/cadastro" class="btn btn-danger">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <script src="/script.js"></script>
+            </body>
+            </html>
+        `);
+        } catch (error) {
+            console.error('Erro ao carregar página de cadastro manual:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaCadastroQrcode(req, res) {
+        try {
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cadastrar via QR Code - Sistema de Produtos</title>
+                <style>${css}</style>
+            </head>
+            <body>
+                <div class="container">
+                    <a href="/cadastro" class="back-link">← Voltar para opções de cadastro</a>
+                    
+                    <div class="card">
+                        <div class="scanner-container">
+                            <div class="header">
+                                <h1>📱 Cadastrar via QR Code</h1>
+                                <p>Escaneie o QR Code da nota fiscal para cadastrar produtos automaticamente</p>
+                            </div>
+
+                            <!-- Área do Scanner -->
+                            <div id="reader">
+                                <div class="scanner-placeholder">
+                                    <div class="icon">📷</div>
+                                    <h3>Área do Scanner de QR Code</h3>
+                                    <p>Posicione o QR Code da nota fiscal dentro desta área</p>
+                                    <button class="btn-scan" onclick="simularLeituraQRCode()">
+                                        🎯 Simular Leitura (Demo)
+                                    </button>
+                                    <p><small>Funcionalidade em desenvolvimento</small></p>
+                                </div>
+                            </div>
+
+                            <!-- Formulário pré-preenchido (inicialmente oculto) -->
+                            <form id="formNfce" class="form-nfce" action="/produtos" method="POST">
+                                <h3>✅ Produto Identificado - Confirme os Dados</h3>
+                                
+                                <div class="form-group">
+                                    <label for="nomeNfce">Nome do Produto *</label>
+                                    <input type="text" id="nomeNfce" name="nome" required 
+                                           placeholder="Nome extraído do QR Code">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="precoNfce">Preço *</label>
+                                    <input type="number" id="precoNfce" name="preco" step="0.01" required 
+                                           placeholder="Preço extraído do QR Code">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="descricaoNfce">Descrição</label>
+                                    <textarea id="descricaoNfce" name="descricao" 
+                                              placeholder="Descrição adicional do produto"></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-success">✅ Confirmar Cadastro</button>
+                                    <button type="button" class="btn btn-danger" onclick="limparFormulario()">🔄 Ler Outro QR Code</button>
+                                </div>
+                            </form>
+
+                            <!-- Informações de desenvolvimento -->
+                            <div class="debug-info">
+                                <strong>🚧 Modo Desenvolvimento</strong>
+                                <p>Esta funcionalidade simula a leitura de QR Code de notas fiscais.</p>
+                                <p>Na versão final, será integrado com:</p>
+                                <ul>
+                                    <li>📱 Leitor real de QR Code</li>
+                                    <li>🏢 Integração com SEFAZ</li>
+                                    <li>📊 Extração automática de dados</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    function simularLeituraQRCode() {
+                        // Dados simulados de uma NFC-e
+                        const produtosDemo = [
+                            {
+                                nome: "Mouse Gamer RGB 7200DPI",
+                                preco: 89.90,
+                                descricao: "Mouse óptico com iluminação RGB"
+                            },
+                            {
+                                nome: "Teclado Mecânico Redragon", 
+                                preco: 249.90,
+                                descricao: "Teclado mecânico switches blue"
+                            },
+                            {
+                                nome: "Monitor LED 24'' Samsung",
+                                preco: 799.90,
+                                descricao: "Monitor Full HD 75Hz"
+                            },
+                            {
+                                nome: "Headphone Wireless Sony",
+                                preco: 299.90,
+                                descricao: "Fone Bluetooth com cancelamento de ruído"
+                            },
+                            {
+                                nome: "Webcam Full HD Logitech",
+                                preco: 189.90,
+                                descricao: "Webcam 1080p com microfone integrado"
+                            }
+                        ];
+                        
+                        // Seleciona um produto aleatório para demonstração
+                        const produto = produtosDemo[Math.floor(Math.random() * produtosDemo.length)];
+                        
+                        // Preenche o formulário
+                        document.getElementById('nomeNfce').value = produto.nome;
+                        document.getElementById('precoNfce').value = produto.preco;
+                        document.getElementById('descricaoNfce').value = produto.descricao;
+                        
+                        // Mostra o formulário
+                        document.getElementById('formNfce').style.display = 'block';
+                        
+                        // Feedback visual
+                        alert('✅ QR Code lido com sucesso! Produto identificado: ' + produto.nome);
+                    }
+                    
+                    function limparFormulario() {
+                        document.getElementById('formNfce').style.display = 'none';
+                        document.getElementById('nomeNfce').value = '';
+                        document.getElementById('precoNfce').value = '';
+                        document.getElementById('descricaoNfce').value = '';
+                    }
+                    
+                    // Simular leitura automática após 3 segundos (apenas para demo)
+                    setTimeout(() => {
+                        console.log('🔍 Scanner de QR Code inicializado (modo demo)');
+                    }, 1000);
+                </script>
+                <script src="/script.js"></script>
+            </body>
+            </html>
+        `);
+        } catch (error) {
+            console.error('Erro ao carregar página de QR Code:', error);
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Erro interno do servidor');
         }

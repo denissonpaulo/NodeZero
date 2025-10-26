@@ -89,6 +89,22 @@ const url = require('url');
             } else if (pathname.startsWith('/produtos')) {
                 // API de produtos
                 ProdutoRoutes.configurarRotas(req, res);
+            // Rotas da aplicação
+            } else if (pathname === '/') {
+                // Página inicial
+                HtmlController.paginaInicial(req, res);
+            } else if (pathname === '/cadastro') {
+                // Página de escolha de cadastro
+                HtmlController.paginaCadastro(req, res);
+            } else if (pathname === '/cadastro-manual') {
+                // Cadastro manual tradicional
+                HtmlController.paginaCadastroManual(req, res);
+            } else if (pathname === '/cadastro-qrcode') {
+                // Cadastro via QR Code
+                HtmlController.paginaCadastroQrcode(req, res);
+            } else if (pathname === '/sucesso') {
+                // Página de sucesso após cadastro
+                HtmlController.paginaSucesso(req, res);
             } else {
                 // Rota não encontrada
                 res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
