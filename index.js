@@ -1,5 +1,5 @@
 const database = require('./db');
-const Produto = require('./models/produto');
+//const Produto = require('./models/produto');
 const ProdutoRoutes = require('./routes/produtoRoutes');
 const HtmlController = require('./controllers/htmlController');
 const http = require('http');
