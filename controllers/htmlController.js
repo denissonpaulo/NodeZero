@@ -350,314 +350,6 @@ class HtmlController {
 
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Cadastrar Produto - Sistema de Produtos</title>
-                    <style>${css}</style>
-                </head>
-                <body>
-                    <div class="container">
-                        <a href="/" class="back-link">← Voltar para a página inicial</a>
-                        
-                        <div class="card form-container">
-                            <div class="header">
-                                <h1>➕ Cadastrar Novo Produto</h1>
-                                <p>Preencha os dados do produto abaixo</p>
-                            </div>
-
-                            <form id="formProduto" action="/produtos" method="POST">
-                                <div class="form-group">
-                                    <label for="nome">Nome do Produto *</label>
-                                    <input type="text" id="nome" name="nome" required 
-                                           placeholder="Ex: Placa mãe Asus i9">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="preco">Preço *</label>
-                                    <input type="number" id="preco" name="preco" step="0.01" required 
-                                           placeholder="Ex: 788.90">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="descricao">Descrição</label>
-                                    <textarea id="descricao" name="descricao" 
-                                              placeholder="Ex: PLC 8 slots DDR5 + i9 + Cooler"></textarea>
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-success">Cadastrar Produto</button>
-                                    <a href="/" class="btn btn-danger">Cancelar</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <script src="/script.js"></script>
-                </body>
-                </html>
-            `);
-        } catch (error) {
-            console.error('Erro ao carregar página de cadastro:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Erro interno do servidor');
-        }
-    }
-
-    static async paginaEditar(req, res, produtoId) {
-        try {
-            const produto = await Produto.findByPk(produtoId);
-            if (!produto) {
-                res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-                return res.end(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Produto Não Encontrado</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-                            h1 { color: #dc3545; }
-                            a { color: #007bff; text-decoration: none; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>Produto Não Encontrado</h1>
-                        <p>O produto com ID ${produtoId} não foi encontrado.</p>
-                        <p><a href="/">Voltar para a página inicial</a></p>
-                    </body>
-                    </html>
-                `);
-            }
-
-            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Editar Produto - Sistema de Produtos</title>
-                    <style>${css}</style>
-                </head>
-                <body>
-                    <div class="container">
-                        <a href="/produtos-lista" class="back-link">← Voltar para a lista de produtos</a>
-                        
-                        <div class="card form-container">
-                            <div class="header">
-                                <h1>✏️ Editar Produto</h1>
-                                <p>Atualize os dados do produto abaixo</p>
-                            </div>
-
-                            <form id="formEditarProduto">
-                                <div class="form-group">
-                                    <label for="nome">Nome do Produto *</label>
-                                    <input type="text" id="nome" name="nome" value="${produto.nome}" required 
-                                           placeholder="Ex: Placa mãe Asus i9">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="preco">Preço *</label>
-                                    <input type="number" id="preco" name="preco" value="${produto.preco}" step="0.01" required 
-                                           placeholder="Ex: 788.90">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="descricao">Descrição</label>
-                                    <textarea id="descricao" name="descricao" 
-                                              placeholder="Ex: PLC 8 slots DDR5 + i9 + Cooler">${produto.descricao || ''}</textarea>
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-success">Atualizar Produto</button>
-                                    <a href="/produtos-lista" class="btn btn-danger">Cancelar</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <script>
-                        document.getElementById('formEditarProduto').addEventListener('submit', async function(e) {
-                            e.preventDefault();
-                            
-                            const formData = new FormData(this);
-                            const produtoId = ${produto.id};
-                            
-                            try {
-                                const response = await fetch('/produtos/' + produtoId, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                        nome: formData.get('nome'),
-                                        preco: parseFloat(formData.get('preco')),
-                                        descricao: formData.get('descricao')
-                                    })
-                                });
-                                
-                                if (response.ok) {
-                                    window.location.href = '/sucesso';
-                                } else {
-                                    alert('Erro ao atualizar produto');
-                                }
-                            } catch (error) {
-                                alert('Erro ao atualizar produto: ' + error.message);
-                            }
-                        });
-                    </script>
-                    <script src="/script.js"></script>
-                </body>
-                </html>
-            `);
-        } catch (error) {
-            console.error('Erro ao carregar página de edição:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Erro interno do servidor');
-        }
-    }
-
-    static async paginaConsultar(req, res, produtoId = null) {
-        try {
-            let produto = null;
-            if (produtoId) {
-                produto = await Produto.findByPk(produtoId);
-            }
-
-            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Consultar Produto - Sistema de Produtos</title>
-                    <style>${css}</style>
-                </head>
-                <body>
-                    <div class="container">
-                        <a href="/" class="back-link">← Voltar para a página inicial</a>
-                        
-                        <div class="card form-container">
-                            <div class="header">
-                                <h1>🔍 Consultar Produto</h1>
-                                <p>Consulte um produto pelo ID</p>
-                            </div>
-
-                            <form action="/consultar" method="GET" style="margin-bottom: 30px;">
-                                <div class="form-group">
-                                    <label for="id">ID do Produto</label>
-                                    <input type="number" id="id" name="id" value="${produtoId || ''}" required 
-                                           placeholder="Digite o ID do produto" min="1">
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn">Consultar</button>
-                                </div>
-                            </form>
-
-                            ${produto ? `
-                                <div class="produto-detalhes">
-                                    <h3>📋 Detalhes do Produto</h3>
-                                    <div class="produto-card">
-                                        <div class="produto-header">
-                                            <h3>${produto.nome}</h3>
-                                            <span class="produto-id">#${produto.id}</span>
-                                        </div>
-                                        <div class="produto-body">
-                                            <p class="produto-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</p>
-                                            <p class="produto-descricao">${produto.descricao || 'Sem descrição'}</p>
-                                            <div class="produto-meta">
-                                                <small><strong>Criado em:</strong> ${new Date(produto.createdAt).toLocaleString('pt-BR')}</small>
-                                                <small><strong>Última atualização:</strong> ${new Date(produto.updatedAt).toLocaleString('pt-BR')}</small>
-                                            </div>
-                                        </div>
-                                        <div class="produto-actions">
-                                            <a href="/editar/${produto.id}" class="btn">✏️ Editar</a>
-                                            <a href="/produtos-lista" class="btn">📦 Ver Todos</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            ` : prodottoId ? `
-                                <div class="message error">
-                                    <h3>❌ Produto Não Encontrado</h3>
-                                    <p>Não foi encontrado nenhum produto com o ID ${produtoId}.</p>
-                                    <p><a href="/produtos-lista">Ver todos os produtos cadastrados</a></p>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <script src="/script.js"></script>
-                </body>
-                </html>
-            `);
-        } catch (error) {
-            console.error('Erro ao carregar página de consulta:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Erro interno do servidor');
-        }
-    }
-
-    static async paginaSucesso(req, res) {
-        try {
-            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Operação Concluída - Sistema de Produtos</title>
-                    <style>${css}</style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="card form-container">
-                            <div class="header">
-                                <h1>✅ Operação Concluída com Sucesso!</h1>
-                                <p>A ação foi executada com sucesso no sistema.</p>
-                            </div>
-
-                            <div class="message success">
-                                <h3>Sucesso!</h3>
-                                <p>A operação foi concluída com sucesso no banco de dados.</p>
-                            </div>
-
-                            <div class="form-actions">
-                                <a href="/" class="btn btn-success">🏠 Página Inicial</a>
-                                <a href="/produtos-lista" class="btn">📦 Ver Produtos</a>
-                                <a href="/cadastro" class="btn">➕ Novo Produto</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <script>
-                        // Redirecionamento automático após 3 segundos
-                        setTimeout(() => {
-                            window.location.href = '/produtos-lista';
-                        }, 3000);
-                    </script>
-                </body>
-                </html>
-            `);
-        } catch (error) {
-            console.error('Erro ao carregar página de sucesso:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Erro interno do servidor');
-        }
-    }
-
-    static async paginaCadastro(req, res) {
-        try {
-            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
-
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(`
             <!DOCTYPE html>
             <html lang="pt-BR">
             <head>
@@ -917,6 +609,254 @@ class HtmlController {
         `);
         } catch (error) {
             console.error('Erro ao carregar página de QR Code:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaEditar(req, res, produtoId) {
+        try {
+            const produto = await Produto.findByPk(produtoId);
+            if (!produto) {
+                res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+                return res.end(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Produto Não Encontrado</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                            h1 { color: #dc3545; }
+                            a { color: #007bff; text-decoration: none; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Produto Não Encontrado</h1>
+                        <p>O produto com ID ${produtoId} não foi encontrado.</p>
+                        <p><a href="/">Voltar para a página inicial</a></p>
+                    </body>
+                    </html>
+                `);
+            }
+
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Editar Produto - Sistema de Produtos</title>
+                    <style>${css}</style>
+                </head>
+                <body>
+                    <div class="container">
+                        <a href="/produtos-lista" class="back-link">← Voltar para a lista de produtos</a>
+                        
+                        <div class="card form-container">
+                            <div class="header">
+                                <h1>✏️ Editar Produto</h1>
+                                <p>Atualize os dados do produto abaixo</p>
+                            </div>
+
+                            <form id="formEditarProduto">
+                                <div class="form-group">
+                                    <label for="nome">Nome do Produto *</label>
+                                    <input type="text" id="nome" name="nome" value="${produto.nome}" required 
+                                           placeholder="Ex: Placa mãe Asus i9">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="preco">Preço *</label>
+                                    <input type="number" id="preco" name="preco" value="${produto.preco}" step="0.01" required 
+                                           placeholder="Ex: 788.90">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="descricao">Descrição</label>
+                                    <textarea id="descricao" name="descricao" 
+                                              placeholder="Ex: PLC 8 slots DDR5 + i9 + Cooler">${produto.descricao || ''}</textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-success">Atualizar Produto</button>
+                                    <a href="/produtos-lista" class="btn btn-danger">Cancelar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                        document.getElementById('formEditarProduto').addEventListener('submit', async function(e) {
+                            e.preventDefault();
+                            
+                            const formData = new FormData(this);
+                            const produtoId = ${produto.id};
+                            
+                            try {
+                                const response = await fetch('/produtos/' + produtoId, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        nome: formData.get('nome'),
+                                        preco: parseFloat(formData.get('preco')),
+                                        descricao: formData.get('descricao')
+                                    })
+                                });
+                                
+                                if (response.ok) {
+                                    window.location.href = '/sucesso';
+                                } else {
+                                    alert('Erro ao atualizar produto');
+                                }
+                            } catch (error) {
+                                alert('Erro ao atualizar produto: ' + error.message);
+                            }
+                        });
+                    </script>
+                    <script src="/script.js"></script>
+                </body>
+                </html>
+            `);
+        } catch (error) {
+            console.error('Erro ao carregar página de edição:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaConsultar(req, res, produtoId = null) {
+        try {
+            let produto = null;
+            if (produtoId) {
+                produto = await Produto.findByPk(produtoId);
+            }
+
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Consultar Produto - Sistema de Produtos</title>
+                    <style>${css}</style>
+                </head>
+                <body>
+                    <div class="container">
+                        <a href="/" class="back-link">← Voltar para a página inicial</a>
+                        
+                        <div class="card form-container">
+                            <div class="header">
+                                <h1>🔍 Consultar Produto</h1>
+                                <p>Consulte um produto pelo ID</p>
+                            </div>
+
+                            <form action="/consultar" method="GET" style="margin-bottom: 30px;">
+                                <div class="form-group">
+                                    <label for="id">ID do Produto</label>
+                                    <input type="number" id="id" name="id" value="${produtoId || ''}" required 
+                                           placeholder="Digite o ID do produto" min="1">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn">Consultar</button>
+                                </div>
+                            </form>
+
+                            ${produto ? `
+                                <div class="produto-detalhes">
+                                    <h3>📋 Detalhes do Produto</h3>
+                                    <div class="produto-card">
+                                        <div class="produto-header">
+                                            <h3>${produto.nome}</h3>
+                                            <span class="produto-id">#${produto.id}</span>
+                                        </div>
+                                        <div class="produto-body">
+                                            <p class="produto-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</p>
+                                            <p class="produto-descricao">${produto.descricao || 'Sem descrição'}</p>
+                                            <div class="produto-meta">
+                                                <small><strong>Criado em:</strong> ${new Date(produto.createdAt).toLocaleString('pt-BR')}</small>
+                                                <small><strong>Última atualização:</strong> ${new Date(produto.updatedAt).toLocaleString('pt-BR')}</small>
+                                            </div>
+                                        </div>
+                                        <div class="produto-actions">
+                                            <a href="/editar/${produto.id}" class="btn">✏️ Editar</a>
+                                            <a href="/produtos-lista" class="btn">📦 Ver Todos</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : prodottoId ? `
+                                <div class="message error">
+                                    <h3>❌ Produto Não Encontrado</h3>
+                                    <p>Não foi encontrado nenhum produto com o ID ${produtoId}.</p>
+                                    <p><a href="/produtos-lista">Ver todos os produtos cadastrados</a></p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <script src="/script.js"></script>
+                </body>
+                </html>
+            `);
+        } catch (error) {
+            console.error('Erro ao carregar página de consulta:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Erro interno do servidor');
+        }
+    }
+
+    static async paginaSucesso(req, res) {
+        try {
+            const css = fs.readFileSync(path.join(__dirname, '../public/style.css'), 'utf8');
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(`
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Operação Concluída - Sistema de Produtos</title>
+                    <style>${css}</style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="card form-container">
+                            <div class="header">
+                                <h1>✅ Operação Concluída com Sucesso!</h1>
+                                <p>A ação foi executada com sucesso no sistema.</p>
+                            </div>
+
+                            <div class="message success">
+                                <h3>Sucesso!</h3>
+                                <p>A operação foi concluída com sucesso no banco de dados.</p>
+                            </div>
+
+                            <div class="form-actions">
+                                <a href="/" class="btn btn-success">🏠 Página Inicial</a>
+                                <a href="/produtos-lista" class="btn">📦 Ver Produtos</a>
+                                <a href="/cadastro" class="btn">➕ Novo Produto</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        // Redirecionamento automático após 3 segundos
+                        setTimeout(() => {
+                            window.location.href = '/produtos-lista';
+                        }, 3000);
+                    </script>
+                    <script src="/script.js"></script>
+                </body>
+                </html>
+            `);
+        } catch (error) {
+            console.error('Erro ao carregar página de sucesso:', error);
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Erro interno do servidor');
         }
